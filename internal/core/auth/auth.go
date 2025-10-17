@@ -11,7 +11,7 @@ import (
 )
 
 /*
- * Было бы здорово инкапсулировать логику работы с Session. Для этого есть структура Auth[T any], которая хранит в себе
+ * Было бы здорово инкапсулировать логику работы с Session. Для этого есть структура Auth, которая хранит в себе
  * приватный экземпляр хранилища (определённого в internal/store/store.go), а также реализует публичные аксессоры дляъ
  * взаимодействия сессий и хранилища.
  */
@@ -63,10 +63,6 @@ func (a *Auth) GetSession(ctx context.Context, token string) (*sessions.Session,
 func (a *Auth) DeleteSession(ctx context.Context, token string) error {
 	return a.store.Delete(ctx, token)
 }
-
-/*
- * Наконец, функция для генерации токенов
- */
 
 func generateToken() (string, error) {
 	bytes := make([]byte, 16)
