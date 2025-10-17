@@ -20,6 +20,10 @@ type Auth struct {
 	store store.Store
 }
 
+func New(store store.Store) *Auth {
+	return &Auth{store}
+}
+
 func (a *Auth) CreateSession(ctx context.Context, userData sessions.UserData, expiresIn time.Duration) (*sessions.Session, error) {
 	token, err := generateToken()
 	if err != nil {
