@@ -3,7 +3,7 @@ package store
 import (
 	"context"
 
-	"github.com/tolstovrob/knocknock/internal/core/sessions"
+	"github.com/tolstovrob/knocknock/sessions"
 )
 
 /*

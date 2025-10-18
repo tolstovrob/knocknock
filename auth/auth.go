@@ -6,8 +6,8 @@ import (
 	"encoding/hex"
 	"time"
 
-	"github.com/tolstovrob/knocknock/internal/core/sessions"
-	"github.com/tolstovrob/knocknock/internal/store"
+	"github.com/tolstovrob/knocknock/sessions"
+	"github.com/tolstovrob/knocknock/store"
 )
 
 /*

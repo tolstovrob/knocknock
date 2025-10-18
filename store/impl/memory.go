@@ -5,8 +5,8 @@ import (
 	"sync"
 	"time"
 
-	"github.com/tolstovrob/knocknock/internal/core/auth"
-	"github.com/tolstovrob/knocknock/internal/core/sessions"
+	"github.com/tolstovrob/knocknock/auth"
+	"github.com/tolstovrob/knocknock/sessions"
 )
 
 /*

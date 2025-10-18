@@ -4,7 +4,7 @@ import (
 	"context"
 	"net/http"
 
-	"github.com/tolstovrob/knocknock/internal/core/sessions"
+	"github.com/tolstovrob/knocknock/sessions"
 )
 
 /*
