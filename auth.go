@@ -8,28 +8,33 @@ import (
 	"time"
 
 	"github.com/tolstovrob/knocknock/sessions"
-	"github.com/tolstovrob/knocknock/store"
+	"github.com/tolstovrob/knocknock/stores"
 )
-
-/*
- * Было бы здорово инкапсулировать логику работы с Session. Для этого есть структура Auth, которая хранит в себе
- * приватный экземпляр хранилища (определённого в internal/store/store.go), а также реализует публичные аксессоры дляъ
- * взаимодействия сессий и хранилища.
- */
 
 var (
 	SessionExpiredError = errors.New("Session expired")
 )
 
 type Auth struct {
-	store store.Store
+	store   stores.Store
+	options *Options
 }
 
-func New(store store.Store) *Auth {
-	return &Auth{store}
+func New(store stores.Store, options ...Option) *Auth {
+	opts := defaultOptions()
+	for _, opt := range options {
+		opt(opts)
+	}
+	return &Auth{store, opts}
 }
 
-func (a *Auth) CreateSession(ctx context.Context, userData sessions.UserData, expiresIn time.Duration) (*sessions.Session, error) {
+func (a *Auth) UpdateOptions(options ...Option) {
+	for _, opt := range options {
+		opt(a.options)
+	}
+}
+
+func (a *Auth) CreateSession(ctx context.Context, userData sessions.UserData, options ...sessions.Option) (*sessions.Session, error) {
 	token, err := generateToken()
 	if err != nil {
 		return nil, err
@@ -41,7 +46,11 @@ func (a *Auth) CreateSession(ctx context.Context, userData sessions.UserData, ex
 		Token:     token,
 		UserData:  userData,
 		CreatedAt: now,
-		ExpiresAt: now.Add(expiresIn),
+		ExpiresAt: now.Add(a.options.DefaultExpiry),
+	}
+
+	for _, opt := range options {
+		opt(session)
 	}
 
 	if err := a.store.Save(ctx, session); err != nil {
