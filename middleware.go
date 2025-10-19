@@ -3,6 +3,7 @@ package knocknock
 import (
 	"context"
 	"net/http"
+	"strings"
 
 	"github.com/tolstovrob/knocknock/sessions"
 )
@@ -31,16 +32,19 @@ func GetSession(ctx context.Context) *sessions.Session {
 	return nil
 }
 
-func extractToken(r *http.Request) string {
-	if authHeader := r.Header.Get("Authorization"); authHeader != "" && len(authHeader) > 7 && authHeader[:7] == "Bearer " {
-		return authHeader[7:]
+func (a *Auth) extractToken(r *http.Request) string {
+	if authHeader := r.Header.Get(a.options.HeaderName); authHeader != "" {
+		if strings.HasPrefix(authHeader, "Bearer ") {
+			return authHeader[7:]
+		}
+		return authHeader
 	}
 
-	if token := r.URL.Query().Get("token"); token != "" {
+	if token := r.URL.Query().Get(a.options.QueryParamName); token != "" {
 		return token
 	}
 
-	if cookie, err := r.Cookie("session_token"); err == nil {
+	if cookie, err := r.Cookie(a.options.CookieName); err == nil {
 		return cookie.Value
 	}
 
