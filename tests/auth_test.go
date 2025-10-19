@@ -129,7 +129,6 @@ func TestAuth(t *testing.T) {
 			t.Fatalf("CreateSession failed: %v", err)
 		}
 
-		// Токен в hex, поэтому длина будет в 2 раза больше
 		expectedTokenLength := customTokenSize * 2
 		if len(session.Token) != expectedTokenLength {
 			t.Errorf("Expected token length %d, got %d", expectedTokenLength, len(session.Token))
@@ -180,7 +179,6 @@ func TestAuth(t *testing.T) {
 	t.Run("Multiple updates", func(t *testing.T) {
 		auth := knocknock.HandleAuth(store)
 
-		// Первое обновление
 		auth.UpdateAuthOptions(
 			knocknock.WithTokenSize(16),
 			knocknock.WithCookieName("first-cookie"),
@@ -193,7 +191,6 @@ func TestAuth(t *testing.T) {
 			t.Error("First update failed for CookieName")
 		}
 
-		// Второе обновление
 		auth.UpdateAuthOptions(
 			knocknock.WithTokenSize(64),
 			knocknock.WithHeaderName("X-Custom-Auth"),
@@ -205,7 +202,7 @@ func TestAuth(t *testing.T) {
 		if auth.AuthOptions.HeaderName != "X-Custom-Auth" {
 			t.Error("Second update failed for HeaderName")
 		}
-		// CookieName должен остаться неизменным после второго обновления
+
 		if auth.AuthOptions.CookieName != "first-cookie" {
 			t.Error("CookieName should remain unchanged after second update")
 		}
@@ -215,7 +212,6 @@ func TestAuth(t *testing.T) {
 		auth := knocknock.HandleAuth(store)
 		originalOpts := *auth.AuthOptions
 
-		// Обновление без опций не должно менять конфигурацию
 		auth.UpdateAuthOptions()
 
 		if *auth.AuthOptions != originalOpts {

@@ -107,7 +107,6 @@ func TestMiddleware(t *testing.T) {
 	t.Run("GetSession from context", func(t *testing.T) {
 		session := &knocknock.Session{Token: "test-token", UserData: "test-user"}
 
-		// Создаем контекст с сессией напрямую, как это делает middleware
 		ctx := context.WithValue(context.Background(), knocknock.SessionContextKey, session)
 
 		retrieved := knocknock.GetSession(ctx)
