@@ -1,5 +1,10 @@
 package knocknock
 
+/*
+ * Точка входа в проект. Здесь содержится всё, что связано непосредственно с авторизацией и аутентификацией. Ключевой
+ * является структура Auth, которая управляет хранилищем и состоянием сессий
+ */
+
 import (
 	"context"
 	"crypto/rand"
@@ -11,15 +16,24 @@ import (
 	"github.com/tolstovrob/knocknock/stores"
 )
 
+// Ошибки аутентефикации
 var (
+	// Возвращается в случае протухшей сессии
 	SessionExpiredError = errors.New("Session expired")
 )
 
+// Структура для управления сессиями аутентификации
 type Auth struct {
 	store   stores.Store
 	options *Options
 }
 
+// Конструктор структуры Auth. Обязательно принимает хранилище, опционально -- набор функциональных опций из options.go
+//
+// Пример:
+//
+//	store := stores.NewMemoryStore()
+//	auth := New(store, knocknock.WithDefaultExpiry(2*time.Hour))
 func New(store stores.Store, options ...Option) *Auth {
 	opts := defaultOptions()
 	for _, opt := range options {
@@ -28,12 +42,15 @@ func New(store stores.Store, options ...Option) *Auth {
 	return &Auth{store, opts}
 }
 
+// Конструктор для обновления опций Auth. Принимает набор функциональных опций из options.go
 func (a *Auth) UpdateOptions(options ...Option) {
 	for _, opt := range options {
 		opt(a.options)
 	}
 }
 
+// Создаёт новую сессию для указанных данных. Автоматически генерирует токен сессии и устанавливает время истечения.
+// Конфигурируется через опции сессии в sessions/options.go. Потенциально может вернуть ошибку из sessions/sessions.go
 func (a *Auth) CreateSession(ctx context.Context, userData sessions.UserData, options ...sessions.Option) (*sessions.Session, error) {
 	token, err := generateToken()
 	if err != nil {
@@ -60,6 +77,8 @@ func (a *Auth) CreateSession(ctx context.Context, userData sessions.UserData, op
 	return session, nil
 }
 
+// Возвращает сессию по токену. Автоматически удаляет сессию если она истекла и возвращает SessionExpiredError.
+// Потенциально может вернуть ошибку из sessions/sessions.go
 func (a *Auth) GetSession(ctx context.Context, token string) (*sessions.Session, error) {
 	session, err := a.store.Get(ctx, token)
 	if err != nil {
@@ -74,6 +93,7 @@ func (a *Auth) GetSession(ctx context.Context, token string) (*sessions.Session,
 	return session, nil
 }
 
+// Удаляет сессию по токену. Потенциально может вернуть ошибку из sessions/sessions.go
 func (a *Auth) DeleteSession(ctx context.Context, token string) error {
 	return a.store.Delete(ctx, token)
 }
