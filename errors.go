@@ -2,7 +2,6 @@ package knocknock
 
 import "errors"
 
-// Ошибки аутентефикации
 var (
 	// Возвращается в случае протухшей сессии
 	SessionExpiredError = errors.New("Session expired")
