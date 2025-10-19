@@ -72,7 +72,7 @@ func defaultAuthOptions() *AuthOptions {
 // Структура для управления сессиями аутентификации
 type Auth struct {
 	store       Store
-	authOptions *AuthOptions
+	AuthOptions *AuthOptions
 }
 
 // Конструктор структуры Auth. Обязательно принимает хранилище, опционально -- набор функциональных опций
@@ -92,19 +92,19 @@ func HandleAuth(store Store, authOptions ...AuthOption) *Auth {
 // Конструктор для обновления опций Auth. Принимает набор функциональных опций
 func (a *Auth) UpdateAuthOptions(authOptions ...AuthOption) {
 	for _, opt := range authOptions {
-		opt(a.authOptions)
+		opt(a.AuthOptions)
 	}
 }
 
 // Создаёт новую сессию для указанных данных. Автоматически генерирует токен сессии и устанавливает время истечения.
 // Конфигурируется через опции сессии в session.go
 func (a *Auth) CreateSession(ctx context.Context, userData UserData) (*Session, error) {
-	token, err := generateToken(a.authOptions.TokenSize)
+	token, err := generateToken(a.AuthOptions.TokenSize)
 	if err != nil {
 		return nil, err
 	}
 
-	session := MakeSession(token, userData, a.authOptions.DefaultExpiry)
+	session := MakeSession(token, userData, a.AuthOptions.DefaultExpiry)
 
 	if err := a.store.Save(ctx, session); err != nil {
 		return nil, err

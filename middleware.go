@@ -67,18 +67,18 @@ func GetSession(ctx context.Context) *Session {
 
 // Извлекает токен из HTTP-запроса. Проверяет HTTP-заголовки, query-параметры и cookies.
 func (a *Auth) extractToken(r *http.Request) string {
-	if authHeader := r.Header.Get(a.authOptions.HeaderName); authHeader != "" {
+	if authHeader := r.Header.Get(a.AuthOptions.HeaderName); authHeader != "" {
 		if strings.HasPrefix(authHeader, "Bearer ") {
 			return authHeader[7:]
 		}
 		return authHeader
 	}
 
-	if token := r.URL.Query().Get(a.authOptions.QueryParamName); token != "" {
+	if token := r.URL.Query().Get(a.AuthOptions.QueryParamName); token != "" {
 		return token
 	}
 
-	if cookie, err := r.Cookie(a.authOptions.CookieName); err == nil {
+	if cookie, err := r.Cookie(a.AuthOptions.CookieName); err == nil {
 		return cookie.Value
 	}
 
