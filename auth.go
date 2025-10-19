@@ -120,7 +120,7 @@ func (a *Auth) GetSession(ctx context.Context, token string) (*Session, error) {
 		return nil, err
 	}
 
-	if time.Now().After(session.ExpiresAt) {
+	if session.IsExpired() {
 		_ = a.DeleteSession(ctx, token)
 		return nil, SessionExpiredError
 	}
