@@ -1,4 +1,4 @@
-# 🔐 Knocknock
+# 🔐 Knocknock &mdash; легковесная авторизация на Go
 
 ![Go Version](https://img.shields.io/badge/Go-1.25.2+-blue.svg)
 ![License](https://img.shields.io/badge/license-GLWT-green.svg)
