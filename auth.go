@@ -52,7 +52,7 @@ func (a *Auth) UpdateOptions(options ...Option) {
 // Создаёт новую сессию для указанных данных. Автоматически генерирует токен сессии и устанавливает время истечения.
 // Конфигурируется через опции сессии в sessions/options.go. Потенциально может вернуть ошибку из sessions/sessions.go
 func (a *Auth) CreateSession(ctx context.Context, userData sessions.UserData, options ...sessions.Option) (*sessions.Session, error) {
-	token, err := generateToken()
+	token, err := generateToken(a.options.TokenLength)
 	if err != nil {
 		return nil, err
 	}
@@ -98,8 +98,9 @@ func (a *Auth) DeleteSession(ctx context.Context, token string) error {
 	return a.store.Delete(ctx, token)
 }
 
-func generateToken() (string, error) {
-	bytes := make([]byte, 16)
+// Генерирует криптографически безопасный случайный токен.
+func generateToken(size int) (string, error) {
+	bytes := make([]byte, size)
 	if _, err := rand.Read(bytes); err != nil {
 		return "", err
 	}
