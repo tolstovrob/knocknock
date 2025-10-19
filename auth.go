@@ -14,7 +14,7 @@ import (
 
 // Структура настроек Auth через функциональные опции
 type AuthOptions struct {
-	TokenLength    int           // Длина токена в байтах
+	TokenSize      int           // Длина токена в байтах
 	DefaultExpiry  time.Duration // Время жизни сессии по умолчанию
 	CookieName     string        // Имя cookie для токена
 	HeaderName     string        // Имя HTTP-заголовка для токена
@@ -24,9 +24,9 @@ type AuthOptions struct {
 type AuthOption func(*AuthOptions)
 
 // Функциональная опция для установки длины токена
-func WithTokenLength(length int) AuthOption {
+func WithTokenSize(length int) AuthOption {
 	return func(o *AuthOptions) {
-		o.TokenLength = length
+		o.TokenSize = length
 	}
 }
 
@@ -61,7 +61,7 @@ func WithQueryParamName(name string) AuthOption {
 // Создаёт и возвращает конфигурацию Auth по умолчанию
 func defaultAuthOptions() *AuthOptions {
 	return &AuthOptions{
-		TokenLength:    32,
+		TokenSize:      32,
 		DefaultExpiry:  24 * time.Hour,
 		CookieName:     "session_token",
 		HeaderName:     "Authorization",
@@ -99,7 +99,7 @@ func (a *Auth) UpdateAuthOptions(authOptions ...AuthOption) {
 // Создаёт новую сессию для указанных данных. Автоматически генерирует токен сессии и устанавливает время истечения.
 // Конфигурируется через опции сессии в sessions/AuthOptions.go. Потенциально может вернуть ошибку из sessions/go
 func (a *Auth) CreateSession(ctx context.Context, userData UserData, sessionOptions ...SessionOption) (*Session, error) {
-	token, err := generateToken(a.authOptions.TokenLength)
+	token, err := generateToken(a.authOptions.TokenSize)
 	if err != nil {
 		return nil, err
 	}
