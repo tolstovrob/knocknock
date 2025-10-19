@@ -75,7 +75,7 @@ type Auth struct {
 	authOptions *AuthOptions
 }
 
-// Конструктор структуры Auth. Обязательно принимает хранилище, опционально -- набор функциональных опций из AuthOptions.go
+// Конструктор структуры Auth. Обязательно принимает хранилище, опционально -- набор функциональных опций
 //
 // Пример:
 //
@@ -89,7 +89,7 @@ func HandleAuth(store Store, authOptions ...AuthOption) *Auth {
 	return &Auth{store, opts}
 }
 
-// Конструктор для обновления опций Auth. Принимает набор функциональных опций из AuthOptions.go
+// Конструктор для обновления опций Auth. Принимает набор функциональных опций
 func (a *Auth) UpdateAuthOptions(authOptions ...AuthOption) {
 	for _, opt := range authOptions {
 		opt(a.authOptions)
@@ -97,7 +97,7 @@ func (a *Auth) UpdateAuthOptions(authOptions ...AuthOption) {
 }
 
 // Создаёт новую сессию для указанных данных. Автоматически генерирует токен сессии и устанавливает время истечения.
-// Конфигурируется через опции сессии в sessions/AuthOptions.go. Потенциально может вернуть ошибку из sessions/go
+// Конфигурируется через опции сессии в session.go
 func (a *Auth) CreateSession(ctx context.Context, userData UserData, sessionOptions ...SessionOption) (*Session, error) {
 	token, err := generateToken(a.authOptions.TokenSize)
 	if err != nil {
@@ -124,8 +124,7 @@ func (a *Auth) CreateSession(ctx context.Context, userData UserData, sessionOpti
 	return session, nil
 }
 
-// Возвращает сессию по токену. Автоматически удаляет сессию если она истекла и возвращает SessionExpiredError.
-// Потенциально может вернуть ошибку из sessions/go
+// Возвращает сессию по токену. Автоматически удаляет сессию если она истекла и возвращает SessionExpiredError
 func (a *Auth) GetSession(ctx context.Context, token string) (*Session, error) {
 	session, err := a.store.Get(ctx, token)
 	if err != nil {
@@ -140,12 +139,12 @@ func (a *Auth) GetSession(ctx context.Context, token string) (*Session, error) {
 	return session, nil
 }
 
-// Удаляет сессию по токену. Потенциально может вернуть ошибку из sessions/go
+// Удаляет сессию по токену
 func (a *Auth) DeleteSession(ctx context.Context, token string) error {
 	return a.store.Delete(ctx, token)
 }
 
-// Генерирует криптографически безопасный случайный токен.
+// Генерирует криптографически безопасный случайный токен
 func generateToken(size int) (string, error) {
 	bytes := make([]byte, size)
 	if _, err := rand.Read(bytes); err != nil {
