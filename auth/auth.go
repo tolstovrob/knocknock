@@ -8,6 +8,7 @@ import (
 
 	"github.com/tolstovrob/knocknock/sessions"
 	"github.com/tolstovrob/knocknock/store"
+	"github.com/tolstovrob/knocknock/utils"
 )
 
 /*
@@ -54,7 +55,7 @@ func (a *Auth) GetSession(ctx context.Context, token string) (*sessions.Session,
 
 	if time.Now().After(session.ExpiresAt) {
 		_ = a.DeleteSession(ctx, token)
-		return nil, SessionExpiredError
+		return nil, utils.SessionExpiredError
 	}
 
 	return session, nil

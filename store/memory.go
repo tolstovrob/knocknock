@@ -1,12 +1,12 @@
-package impl
+package store
 
 import (
 	"context"
 	"sync"
 	"time"
 
-	"github.com/tolstovrob/knocknock/auth"
 	"github.com/tolstovrob/knocknock/sessions"
+	"github.com/tolstovrob/knocknock/utils"
 )
 
 /*
@@ -29,7 +29,7 @@ func (m *MemoryStore) Save(ctx context.Context, session *sessions.Session) error
 	defer m.mu.Unlock()
 
 	if _, exists := m.sessions[session.Token]; exists {
-		return auth.SessionExistsError
+		return utils.SessionExistsError
 	}
 
 	m.sessions[session.Token] = session
@@ -43,7 +43,7 @@ func (m *MemoryStore) Get(ctx context.Context, token string) (*sessions.Session,
 	session, exists := m.sessions[token]
 
 	if !exists {
-		return nil, auth.SessionNotFoundError
+		return nil, utils.SessionNotFoundError
 	}
 
 	return session, nil
