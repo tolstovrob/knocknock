@@ -1,5 +1,9 @@
 package knocknock
 
+/*
+ * errors.go содержит объекты ошибок, с которыми может столкнуться knocknock
+ */
+
 import "errors"
 
 var (
