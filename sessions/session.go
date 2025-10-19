@@ -11,7 +11,13 @@ type Session struct {
 	ExpiresAt time.Time `json:"expiresAt"`
 }
 
-func New(token string, userData UserData, options ...Option) *Session {
+func WithExpiresAt(expiry time.Time) func(*Session) {
+	return func(s *Session) {
+		s.ExpiresAt = expiry
+	}
+}
+
+func New(token string, userData UserData, options ...func(*Session)) *Session {
 	ss := &Session{Token: token, UserData: userData}
 	for _, opt := range options {
 		opt(ss)
