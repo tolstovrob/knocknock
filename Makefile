@@ -1,6 +1,6 @@
 # examples
 simple-server:
-	@go run examples/simple-server.go
+	@go run examples/simple_server.go
 
 # dev
 test:
