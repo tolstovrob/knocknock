@@ -6,12 +6,7 @@ import (
 	"time"
 
 	"github.com/tolstovrob/knocknock/sessions"
-	"github.com/tolstovrob/knocknock/utils"
 )
-
-/*
- * Реализация хранилища сессий во временной памяти. Имплементирует интерфейс Store из internal/store/store.go
- */
 
 type MemoryStore struct {
 	mu       sync.RWMutex
@@ -29,7 +24,7 @@ func (m *MemoryStore) Save(ctx context.Context, session *sessions.Session) error
 	defer m.mu.Unlock()
 
 	if _, exists := m.sessions[session.Token]; exists {
-		return utils.SessionExistsError
+		return SessionExistsError
 	}
 
 	m.sessions[session.Token] = session
@@ -43,7 +38,7 @@ func (m *MemoryStore) Get(ctx context.Context, token string) (*sessions.Session,
 	session, exists := m.sessions[token]
 
 	if !exists {
-		return nil, utils.SessionNotFoundError
+		return nil, SessionNotFoundError
 	}
 
 	return session, nil
@@ -56,12 +51,6 @@ func (m *MemoryStore) Delete(ctx context.Context, token string) error {
 	delete(m.sessions, token)
 	return nil
 }
-
-/*
- * Также добавим опциональную для интерфейса Store и, тем не менее, полезную функцию Cleanup, удаляющую устаревшие
- * сессии из нашего хранилища. Замечу, что метод не возвращает error даже в качестве nil. Это потому, что данный метод
- * не является частью публичного интерфейса Store, а значит мы можем написать любую реализацию
- */
 
 func (m *MemoryStore) Cleanup() {
 	m.mu.Lock()

@@ -2,8 +2,14 @@ package store
 
 import (
 	"context"
+	"errors"
 
 	"github.com/tolstovrob/knocknock/sessions"
+)
+
+var (
+	SessionNotFoundError = errors.New("Session not found")
+	SessionExistsError   = errors.New("Session with given token already exists")
 )
 
 type Store interface {
