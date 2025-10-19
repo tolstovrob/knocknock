@@ -11,9 +11,6 @@ import (
 	"encoding/hex"
 	"errors"
 	"time"
-
-	"github.com/tolstovrob/knocknock/sessions"
-	"github.com/tolstovrob/knocknock/stores"
 )
 
 // Ошибки аутентефикации
@@ -22,9 +19,66 @@ var (
 	SessionExpiredError = errors.New("Session expired")
 )
 
+// Структура настроек Auth через функциональные опции
+type Options struct {
+	TokenLength    int           // Длина токена в байтах
+	DefaultExpiry  time.Duration // Время жизни сессии по умолчанию
+	CookieName     string        // Имя cookie для токена
+	HeaderName     string        // Имя HTTP-заголовка для токена
+	QueryParamName string        // Имя query-параметра для токена
+}
+
+type Option func(*Options)
+
+// Функциональная опция для установки длины токена
+func WithTokenLength(length int) Option {
+	return func(o *Options) {
+		o.TokenLength = length
+	}
+}
+
+// Функциональная опция для установки времени жизни по умолчанию
+func WithDefaultExpiry(expiry time.Duration) Option {
+	return func(o *Options) {
+		o.DefaultExpiry = expiry
+	}
+}
+
+// Функциональная опция для установки имя cookie токена
+func WithCookieName(name string) Option {
+	return func(o *Options) {
+		o.CookieName = name
+	}
+}
+
+// Функциональная опция для установки имени HTTP-заголовка токена
+func WithHeaderName(name string) Option {
+	return func(o *Options) {
+		o.HeaderName = name
+	}
+}
+
+// Функциональная опция для установки имени query-параметра токена
+func WithQueryParamName(name string) Option {
+	return func(o *Options) {
+		o.QueryParamName = name
+	}
+}
+
+// Создаёт и возвращает конфигурацию Auth по умолчанию
+func defaultOptions() *Options {
+	return &Options{
+		TokenLength:    32,
+		DefaultExpiry:  24 * time.Hour,
+		CookieName:     "session_token",
+		HeaderName:     "Authorization",
+		QueryParamName: "token",
+	}
+}
+
 // Структура для управления сессиями аутентификации
 type Auth struct {
-	store   stores.Store
+	store   Store
 	options *Options
 }
 
@@ -32,9 +86,9 @@ type Auth struct {
 //
 // Пример:
 //
-//	store := stores.NewMemoryStore()
-//	auth := New(store, knocknock.WithDefaultExpiry(2*time.Hour))
-func New(store stores.Store, options ...Option) *Auth {
+//	store := NewMemoryStore()
+//	auth := HandleAuth(store, knocknock.WithDefaultExpiry(2*time.Hour))
+func HandleAuth(store Store, options ...Option) *Auth {
 	opts := defaultOptions()
 	for _, opt := range options {
 		opt(opts)
@@ -50,8 +104,8 @@ func (a *Auth) UpdateOptions(options ...Option) {
 }
 
 // Создаёт новую сессию для указанных данных. Автоматически генерирует токен сессии и устанавливает время истечения.
-// Конфигурируется через опции сессии в sessions/options.go. Потенциально может вернуть ошибку из sessions/sessions.go
-func (a *Auth) CreateSession(ctx context.Context, userData sessions.UserData, options ...sessions.Option) (*sessions.Session, error) {
+// Конфигурируется через опции сессии в sessions/options.go. Потенциально может вернуть ошибку из sessions/go
+func (a *Auth) CreateSession(ctx context.Context, userData UserData, options ...SessionOption) (*Session, error) {
 	token, err := generateToken(a.options.TokenLength)
 	if err != nil {
 		return nil, err
@@ -59,7 +113,7 @@ func (a *Auth) CreateSession(ctx context.Context, userData sessions.UserData, op
 
 	now := time.Now()
 
-	session := &sessions.Session{
+	session := &Session{
 		Token:     token,
 		UserData:  userData,
 		CreatedAt: now,
@@ -78,8 +132,8 @@ func (a *Auth) CreateSession(ctx context.Context, userData sessions.UserData, op
 }
 
 // Возвращает сессию по токену. Автоматически удаляет сессию если она истекла и возвращает SessionExpiredError.
-// Потенциально может вернуть ошибку из sessions/sessions.go
-func (a *Auth) GetSession(ctx context.Context, token string) (*sessions.Session, error) {
+// Потенциально может вернуть ошибку из sessions/go
+func (a *Auth) GetSession(ctx context.Context, token string) (*Session, error) {
 	session, err := a.store.Get(ctx, token)
 	if err != nil {
 		return nil, err
@@ -93,7 +147,7 @@ func (a *Auth) GetSession(ctx context.Context, token string) (*sessions.Session,
 	return session, nil
 }
 
-// Удаляет сессию по токену. Потенциально может вернуть ошибку из sessions/sessions.go
+// Удаляет сессию по токену. Потенциально может вернуть ошибку из sessions/go
 func (a *Auth) DeleteSession(ctx context.Context, token string) error {
 	return a.store.Delete(ctx, token)
 }
