@@ -10,3 +10,7 @@ type Session struct {
 	CreatedAt time.Time `json:"createdAt"`
 	ExpiresAt time.Time `json:"expiresAt"`
 }
+
+func (s *Session) IsExpired() bool {
+	return time.Now().After(s.ExpiresAt)
+}
