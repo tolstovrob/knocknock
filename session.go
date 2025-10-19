@@ -4,14 +4,6 @@ import "time"
 
 type UserData = any
 
-type SessionOption func(*Session)
-
-func WithExpiresAt(expiry time.Time) SessionOption {
-	return func(s *Session) {
-		s.ExpiresAt = expiry
-	}
-}
-
 type Session struct {
 	Token     string    `json:"token"`
 	UserData  UserData  `json:"userData"`
@@ -19,11 +11,9 @@ type Session struct {
 	ExpiresAt time.Time `json:"expiresAt"`
 }
 
-func MakeSession(token string, userData UserData, options ...SessionOption) *Session {
-	ss := &Session{Token: token, UserData: userData, CreatedAt: time.Now()}
-	for _, opt := range options {
-		opt(ss)
-	}
+func MakeSession(token string, userData UserData, expiresIn time.Duration) *Session {
+	now := time.Now()
+	ss := &Session{Token: token, UserData: userData, CreatedAt: now, ExpiresAt: now.Add(expiresIn)}
 	return ss
 }
 

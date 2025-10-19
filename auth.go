@@ -98,24 +98,13 @@ func (a *Auth) UpdateAuthOptions(authOptions ...AuthOption) {
 
 // Создаёт новую сессию для указанных данных. Автоматически генерирует токен сессии и устанавливает время истечения.
 // Конфигурируется через опции сессии в session.go
-func (a *Auth) CreateSession(ctx context.Context, userData UserData, sessionOptions ...SessionOption) (*Session, error) {
+func (a *Auth) CreateSession(ctx context.Context, userData UserData) (*Session, error) {
 	token, err := generateToken(a.authOptions.TokenSize)
 	if err != nil {
 		return nil, err
 	}
 
-	now := time.Now()
-
-	session := &Session{
-		Token:     token,
-		UserData:  userData,
-		CreatedAt: now,
-		ExpiresAt: now.Add(a.authOptions.DefaultExpiry),
-	}
-
-	for _, opt := range sessionOptions {
-		opt(session)
-	}
+	session := MakeSession(token, userData, a.authOptions.DefaultExpiry)
 
 	if err := a.store.Save(ctx, session); err != nil {
 		return nil, err
