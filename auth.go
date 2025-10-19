@@ -1,4 +1,4 @@
-package auth
+package knocknock
 
 import (
 	"context"
