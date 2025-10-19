@@ -4,11 +4,11 @@ import (
 	"context"
 	"crypto/rand"
 	"encoding/hex"
+	"errors"
 	"time"
 
 	"github.com/tolstovrob/knocknock/sessions"
 	"github.com/tolstovrob/knocknock/store"
-	"github.com/tolstovrob/knocknock/utils"
 )
 
 /*
@@ -16,6 +16,10 @@ import (
  * приватный экземпляр хранилища (определённого в internal/store/store.go), а также реализует публичные аксессоры дляъ
  * взаимодействия сессий и хранилища.
  */
+
+var (
+	SessionExpiredError = errors.New("Session expired")
+)
 
 type Auth struct {
 	store store.Store
@@ -55,7 +59,7 @@ func (a *Auth) GetSession(ctx context.Context, token string) (*sessions.Session,
 
 	if time.Now().After(session.ExpiresAt) {
 		_ = a.DeleteSession(ctx, token)
-		return nil, utils.SessionExpiredError
+		return nil, SessionExpiredError
 	}
 
 	return session, nil
