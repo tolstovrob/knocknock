@@ -10,9 +10,9 @@ import (
 	"strings"
 )
 
-type contextKey string
+type ContextKey string
 
-const sessionContextKey contextKey = "session"
+const SessionContextKey ContextKey = "session"
 
 // Создает HTTP middleware для проверки аутентификации. Функция извлекает токен из запроса и, если сессия
 // валидна, добавляет её в контекст запроса.
@@ -36,7 +36,7 @@ func (a *Auth) Middleware() func(http.Handler) http.Handler {
 			token := a.extractToken(r)
 
 			if session, err := a.GetSession(r.Context(), token); err == nil {
-				ctx := context.WithValue(r.Context(), sessionContextKey, session)
+				ctx := context.WithValue(r.Context(), SessionContextKey, session)
 				r = r.WithContext(ctx)
 			}
 
@@ -59,7 +59,7 @@ func (a *Auth) Middleware() func(http.Handler) http.Handler {
 //	    // работа с данными пользователя
 //	}
 func GetSession(ctx context.Context) *Session {
-	if session, ok := ctx.Value(sessionContextKey).(*Session); ok {
+	if session, ok := ctx.Value(SessionContextKey).(*Session); ok {
 		return session
 	}
 	return nil
