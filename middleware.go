@@ -7,10 +7,6 @@ import (
 	"github.com/tolstovrob/knocknock/sessions"
 )
 
-/*
- * Тут содержится код дял http middleware системы авторизации, а также соответствующая работа с контекстом
- */
-
 type contextKey string
 
 const sessionContextKey contextKey = "session"
@@ -36,17 +32,14 @@ func GetSession(ctx context.Context) *sessions.Session {
 }
 
 func extractToken(r *http.Request) string {
-	// Из заголовка HTTP
 	if authHeader := r.Header.Get("Authorization"); authHeader != "" && len(authHeader) > 7 && authHeader[:7] == "Bearer " {
 		return authHeader[7:]
 	}
 
-	// Из query параметра
 	if token := r.URL.Query().Get("token"); token != "" {
 		return token
 	}
 
-	// Из cookie
 	if cookie, err := r.Cookie("session_token"); err == nil {
 		return cookie.Value
 	}
