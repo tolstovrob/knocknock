@@ -4,8 +4,6 @@ import (
 	"context"
 	"net/http"
 	"strings"
-
-	"github.com/tolstovrob/knocknock/sessions"
 )
 
 type contextKey string
@@ -27,26 +25,26 @@ func (a *Auth) Middleware() func(http.Handler) http.Handler {
 	}
 }
 
-func GetSession(ctx context.Context) *sessions.Session {
-	if session, ok := ctx.Value(sessionContextKey).(*sessions.Session); ok {
+func GetSession(ctx context.Context) *Session {
+	if session, ok := ctx.Value(sessionContextKey).(*Session); ok {
 		return session
 	}
 	return nil
 }
 
 func (a *Auth) extractToken(r *http.Request) string {
-	if authHeader := r.Header.Get(a.options.HeaderName); authHeader != "" {
+	if authHeader := r.Header.Get(a.authOptions.HeaderName); authHeader != "" {
 		if strings.HasPrefix(authHeader, "Bearer ") {
 			return authHeader[7:]
 		}
 		return authHeader
 	}
 
-	if token := r.URL.Query().Get(a.options.QueryParamName); token != "" {
+	if token := r.URL.Query().Get(a.authOptions.QueryParamName); token != "" {
 		return token
 	}
 
-	if cookie, err := r.Cookie(a.options.CookieName); err == nil {
+	if cookie, err := r.Cookie(a.authOptions.CookieName); err == nil {
 		return cookie.Value
 	}
 

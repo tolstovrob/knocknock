@@ -1,8 +1,16 @@
-package sessions
+package knocknock
 
 import "time"
 
 type UserData = any
+
+type SessionOption func(*Session)
+
+func WithExpiresAt(expiry time.Time) SessionOption {
+	return func(s *Session) {
+		s.ExpiresAt = expiry
+	}
+}
 
 type Session struct {
 	Token     string    `json:"token"`
@@ -11,7 +19,7 @@ type Session struct {
 	ExpiresAt time.Time `json:"expiresAt"`
 }
 
-func New(token string, userData UserData, options ...func(*Session)) *Session {
+func MakeSession(token string, userData UserData, options ...SessionOption) *Session {
 	ss := &Session{Token: token, UserData: userData}
 	for _, opt := range options {
 		opt(ss)

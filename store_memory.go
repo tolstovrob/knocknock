@@ -1,25 +1,23 @@
-package stores
+package knocknock
 
 import (
 	"context"
 	"sync"
 	"time"
-
-	"github.com/tolstovrob/knocknock/sessions"
 )
 
 type MemoryStore struct {
 	mu       sync.RWMutex
-	sessions map[string]*sessions.Session
+	sessions map[string]*Session
 }
 
 func NewMemoryStore() *MemoryStore {
 	return &MemoryStore{
-		sessions: make(map[string]*sessions.Session),
+		sessions: make(map[string]*Session),
 	}
 }
 
-func (m *MemoryStore) Save(ctx context.Context, session *sessions.Session) error {
+func (m *MemoryStore) Save(ctx context.Context, session *Session) error {
 	m.mu.Lock()
 	defer m.mu.Unlock()
 
@@ -31,7 +29,7 @@ func (m *MemoryStore) Save(ctx context.Context, session *sessions.Session) error
 	return nil
 }
 
-func (m *MemoryStore) Get(ctx context.Context, token string) (*sessions.Session, error) {
+func (m *MemoryStore) Get(ctx context.Context, token string) (*Session, error) {
 	m.mu.RLock()
 	defer m.mu.RUnlock()
 

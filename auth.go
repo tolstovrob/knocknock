@@ -9,18 +9,11 @@ import (
 	"context"
 	"crypto/rand"
 	"encoding/hex"
-	"errors"
 	"time"
 )
 
-// Ошибки аутентефикации
-var (
-	// Возвращается в случае протухшей сессии
-	SessionExpiredError = errors.New("Session expired")
-)
-
 // Структура настроек Auth через функциональные опции
-type Options struct {
+type AuthOptions struct {
 	TokenLength    int           // Длина токена в байтах
 	DefaultExpiry  time.Duration // Время жизни сессии по умолчанию
 	CookieName     string        // Имя cookie для токена
@@ -28,46 +21,46 @@ type Options struct {
 	QueryParamName string        // Имя query-параметра для токена
 }
 
-type Option func(*Options)
+type AuthOption func(*AuthOptions)
 
 // Функциональная опция для установки длины токена
-func WithTokenLength(length int) Option {
-	return func(o *Options) {
+func WithTokenLength(length int) AuthOption {
+	return func(o *AuthOptions) {
 		o.TokenLength = length
 	}
 }
 
 // Функциональная опция для установки времени жизни по умолчанию
-func WithDefaultExpiry(expiry time.Duration) Option {
-	return func(o *Options) {
+func WithDefaultExpiry(expiry time.Duration) AuthOption {
+	return func(o *AuthOptions) {
 		o.DefaultExpiry = expiry
 	}
 }
 
 // Функциональная опция для установки имя cookie токена
-func WithCookieName(name string) Option {
-	return func(o *Options) {
+func WithCookieName(name string) AuthOption {
+	return func(o *AuthOptions) {
 		o.CookieName = name
 	}
 }
 
 // Функциональная опция для установки имени HTTP-заголовка токена
-func WithHeaderName(name string) Option {
-	return func(o *Options) {
+func WithHeaderName(name string) AuthOption {
+	return func(o *AuthOptions) {
 		o.HeaderName = name
 	}
 }
 
 // Функциональная опция для установки имени query-параметра токена
-func WithQueryParamName(name string) Option {
-	return func(o *Options) {
+func WithQueryParamName(name string) AuthOption {
+	return func(o *AuthOptions) {
 		o.QueryParamName = name
 	}
 }
 
 // Создаёт и возвращает конфигурацию Auth по умолчанию
-func defaultOptions() *Options {
-	return &Options{
+func defaultAuthOptions() *AuthOptions {
+	return &AuthOptions{
 		TokenLength:    32,
 		DefaultExpiry:  24 * time.Hour,
 		CookieName:     "session_token",
@@ -78,35 +71,35 @@ func defaultOptions() *Options {
 
 // Структура для управления сессиями аутентификации
 type Auth struct {
-	store   Store
-	options *Options
+	store       Store
+	authOptions *AuthOptions
 }
 
-// Конструктор структуры Auth. Обязательно принимает хранилище, опционально -- набор функциональных опций из options.go
+// Конструктор структуры Auth. Обязательно принимает хранилище, опционально -- набор функциональных опций из AuthOptions.go
 //
 // Пример:
 //
 //	store := NewMemoryStore()
 //	auth := HandleAuth(store, knocknock.WithDefaultExpiry(2*time.Hour))
-func HandleAuth(store Store, options ...Option) *Auth {
-	opts := defaultOptions()
-	for _, opt := range options {
+func HandleAuth(store Store, authOptions ...AuthOption) *Auth {
+	opts := defaultAuthOptions()
+	for _, opt := range authOptions {
 		opt(opts)
 	}
 	return &Auth{store, opts}
 }
 
-// Конструктор для обновления опций Auth. Принимает набор функциональных опций из options.go
-func (a *Auth) UpdateOptions(options ...Option) {
-	for _, opt := range options {
-		opt(a.options)
+// Конструктор для обновления опций Auth. Принимает набор функциональных опций из AuthOptions.go
+func (a *Auth) UpdateAuthOptions(authOptions ...AuthOption) {
+	for _, opt := range authOptions {
+		opt(a.authOptions)
 	}
 }
 
 // Создаёт новую сессию для указанных данных. Автоматически генерирует токен сессии и устанавливает время истечения.
-// Конфигурируется через опции сессии в sessions/options.go. Потенциально может вернуть ошибку из sessions/go
-func (a *Auth) CreateSession(ctx context.Context, userData UserData, options ...SessionOption) (*Session, error) {
-	token, err := generateToken(a.options.TokenLength)
+// Конфигурируется через опции сессии в sessions/AuthOptions.go. Потенциально может вернуть ошибку из sessions/go
+func (a *Auth) CreateSession(ctx context.Context, userData UserData, sessionOptions ...SessionOption) (*Session, error) {
+	token, err := generateToken(a.authOptions.TokenLength)
 	if err != nil {
 		return nil, err
 	}
@@ -117,10 +110,10 @@ func (a *Auth) CreateSession(ctx context.Context, userData UserData, options ...
 		Token:     token,
 		UserData:  userData,
 		CreatedAt: now,
-		ExpiresAt: now.Add(a.options.DefaultExpiry),
+		ExpiresAt: now.Add(a.authOptions.DefaultExpiry),
 	}
 
-	for _, opt := range options {
+	for _, opt := range sessionOptions {
 		opt(session)
 	}
 
