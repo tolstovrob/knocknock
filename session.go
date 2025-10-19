@@ -20,7 +20,7 @@ type Session struct {
 }
 
 func MakeSession(token string, userData UserData, options ...SessionOption) *Session {
-	ss := &Session{Token: token, UserData: userData}
+	ss := &Session{Token: token, UserData: userData, CreatedAt: time.Now()}
 	for _, opt := range options {
 		opt(ss)
 	}
