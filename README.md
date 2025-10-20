@@ -11,20 +11,20 @@
 
 ![Архитектура Knocknock](docs/architecture.png)
 
-## 🚀 Особенности
+## Особенности
 
 - **Простой API**: Достаточно лишь создать структуру Auth и вперёд!
 - **Множественные источники токенов**: Поддержка cookies, HTTP-заголовков и query-параметров. Инкапсулирована в одном модуле
 - **Расширяемое хранилище**: Интерфейс для подключения любых бэкендов через интерфейс Store. Из коробки реализовано in-memory хранилище
 - **Готовый HTTP middleware**: Встроенная поддержка для интеграции с веб-приложениями
 
-## 📦 Установка
+## Установка
 
 ```sh
 go get -u github.com/tolstovrob/knocknock
 ```
 
-## 🛠️ Быстрый старт
+## Быстрый старт
 
 Более подробные примеры использования можно найти в `examples/`. Проект документирован, поэтому для API Reference можно использовать:
 
@@ -40,28 +40,28 @@ package main
 import (
     "net/http"
     "time"
-    
+
     "github.com/tolstovrob/knocknock"
 )
 
 func main() {
     // Создаём in-memory хранилище. Замените на любую реализацию Store
     store := knocknock.HandleMemoryStore()
-    
+
     // Создаём менеджер аутентификации Auth с настройками
     auth := knocknock.HandleAuth(store,
         knocknock.WithDefaultExpiry(24 * time.Hour),
         knocknock.WithCookieName("auth_token"),
     )
-    
+
     // Настраиваем роутер
     mux := http.NewServeMux()
     mux.HandleFunc("/login", loginHandler)
     mux.HandleFunc("/profile", profileHandler)
-    
+
     // Добавляем middleware аутентификации
     handler := auth.Middleware()(mux)
-    
+
     http.ListenAndServe(":8080", handler)
 }
 ```
@@ -81,13 +81,13 @@ func loginHandler(w http.ResponseWriter, r *http.Request) {
         Username: "testuser",
         Email:    "test@example.com",
     }
-    
+
     session, err := auth.CreateSession(r.Context(), user)
     if err != nil {
         http.Error(w, "Failed to create session", http.StatusInternalServerError)
         return
     }
-    
+
     // Устанавливаем cookie для удобной работы с SPA.
     // На фронтенде достаточно лишь прокинуть соответствующий HTTP-заголовок
     http.SetCookie(w, &http.Cookie{
@@ -97,7 +97,7 @@ func loginHandler(w http.ResponseWriter, r *http.Request) {
         HttpOnly: true,
         Path:     "/",
     })
-    
+
     w.WriteHeader(http.StatusOK)
     fmt.Fprintf(w, "Logged in successfully")
 }
@@ -112,13 +112,13 @@ func profileHandler(w http.ResponseWriter, r *http.Request) {
         http.Error(w, "Unauthorized", http.StatusUnauthorized)
         return
     }
-    
+
     user, ok := session.UserData.(User)
     if !ok {
         http.Error(w, "Invalid session data", http.StatusInternalServerError)
         return
     }
-    
+
     // Работаем с данными пользователя
     json.NewEncoder(w).Encode(user)
 }
@@ -147,7 +147,7 @@ auth.UpdateAuthOptions(
 )
 ```
 
-## 💾 Хранилища
+## Хранилища
 
 ### In-Memory хранилище (для разработки)
 
@@ -175,7 +175,7 @@ type Store interface {
 }
 ```
 
-## 🔧 API Reference
+## API Reference
 
 ### Основные методы
 
